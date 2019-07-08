@@ -20,10 +20,17 @@ class TimeLine extends React.Component {
     constructor(props) {
         super(props);
 
+        let countShownPoints = this.getShownPointsCount();
+        let maxCountWithCache = countShownPoints + 2 * (countShownPoints - 1)
+        let pointWidth = countShownPoints === 7 ? 30 : 47;
+        let pointsCount = props.range.length > maxCountWithCache ? maxCountWithCache : props.range.length;
+        let leftPosition = -1 * pointWidth * (pointsCount - countShownPoints);
+
         this.state = {
             currentValue: props.value ? props.value : null,
             rangeDelta: 0,
-            countShownPoints: this.getShownPointsCount()
+            countShownPoints,
+            leftPosition
         };
     }
 
@@ -48,6 +55,10 @@ class TimeLine extends React.Component {
         return 11;
     }
 
+    handleLeftButton() {
+        this.setState({ leftPosition: 0 });
+    }
+
     handleValueChanged(currentValue) {
         const { onChange } = this.props;
         this.setState({ currentValue }, () => onChange(currentValue));
@@ -55,20 +66,27 @@ class TimeLine extends React.Component {
 
     render() {
         const { classes, range } = this.props;
-        const { currentValue, rangeDelta, countShownPoints } = this.state;
+        const { currentValue, rangeDelta, countShownPoints, leftPosition } = this.state;
 
         let content = null;
         let buttonLeft = null;
         let buttonRight = null;
+        let pointsWidth = 0;
+        let pointsCount = 0;
 
         if (range && range.length)
         {
-            let endIndex = range.length - rangeDelta;
-            let startIndex = endIndex - countShownPoints;
-            if (startIndex < 0) startIndex = 0;
-            let visiblePoints = range.slice(startIndex, endIndex);
+            let maxCountWithCache = countShownPoints + 2 * (countShownPoints - 1)
+            let pointWidth = countShownPoints === 7 ? 30 : 47;
+            pointsCount = range.length > maxCountWithCache ? maxCountWithCache : range.length;
+            pointsWidth = pointWidth * pointsCount;
 
-            content = visiblePoints.map((point, idx) => (
+            let endIndex = range.length - rangeDelta;
+            let startIndex = endIndex - pointsCount;
+            if (startIndex < 0) startIndex = 0;
+            let points = range.slice(startIndex, endIndex);
+
+            content = points.map((point, idx) => (
                 <Tooltip title={ this.formatDate(point) } key={ idx } placement="top">
                     <Radio
                         icon={ <RadioButtonIcon fontSize="small" /> }
@@ -83,7 +101,7 @@ class TimeLine extends React.Component {
             if (countShownPoints < range.length)
             {
                 buttonLeft = (
-                    <IconButton className={ classes.button }>
+                    <IconButton className={ classes.button } onClick={ () => this.handleLeftButton() }>
                         <BackIcon />
                     </IconButton>
                 );
@@ -101,7 +119,7 @@ class TimeLine extends React.Component {
                 <div className={ classes.upper }>
                     { buttonLeft }
                     <div className={ classes.pointsWrapper }>
-                        <div className={ classes.points }>{ content }</div>
+                        <div className={ classes.points } style={{ width: pointsWidth + 'px', left: leftPosition + 'px' }}>{ content }</div>
                     </div>
                     { buttonRight }
                 </div>
@@ -147,7 +165,8 @@ const styles = theme => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '100%'
+        width: '100%',
+        transition: 'left ease-out 0.3s'
     },
     point: {
         padding: 9,
@@ -172,8 +191,8 @@ const styles = theme => ({
  */
 TimeLine.propTypes = {
     classes: PropTypes.object.isRequired,
+    range: PropTypes.array.isRequired,
     value: PropTypes.object,
-    range: PropTypes.array,
     onChange: PropTypes.func
 };
 
