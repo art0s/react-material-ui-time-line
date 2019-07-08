@@ -7,7 +7,7 @@ import TimeLine from './component/time-line';
 function App() {
   let exampleDates = [];
   let startDate = new Date();
-  for (let i = 0; i < 10; i++)
+  for (let i = 14; i >= 0; i--)
   {
     let d = new Date();
     d.setMinutes(startDate.getMinutes() - i);
@@ -17,7 +17,11 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <TimeLine range={ exampleDates } onChange={ (value) => console.log(value) } />
+        <TimeLine
+          value={ exampleDates[exampleDates.length - 1] }
+          range={ exampleDates }
+          onChange={ (value) => console.log(value) }
+        />
       </header>
     </div>
   );
