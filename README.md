@@ -11,6 +11,7 @@ This is a simple time line component.
 
 ```js
 import TimeLine from './component/time-line'; // ES6
+```
 
 ## Properties
 
